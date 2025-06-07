@@ -1,4 +1,4 @@
-      // Collapsible FAQ functionality
+  // Collapsible FAQ functionality
 document.querySelectorAll('.faq-question').forEach(question => {
     question.addEventListener('click', () => {
         const faqItem = question.parentElement;
@@ -6,99 +6,81 @@ document.querySelectorAll('.faq-question').forEach(question => {
     });
 });
 
-// Partner carousel functionality
-document.addEventListener('DOMContentLoaded', () => {
-    const carousel = document.getElementById('carousel');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const logoTrack = document.querySelector('.logo-track');
+// Customer Reviews Carousel
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.querySelector('.reviews-track');
+    const cards = document.querySelectorAll('.review-card');
+    const dotsContainer = document.querySelector('.review-dots');
+    const prevBtn = document.querySelector('.review-prev');
+    const nextBtn = document.querySelector('.review-next');
     
-    let scrollInterval;
-    let isPaused = false;
+    let currentIndex = 0;
+    const cardCount = cards.length;
     
-    // Initialize auto-scroll
-    function startAutoScroll() {
-        scrollInterval = setInterval(() => {
-            if (!isPaused) {
-                const currentScroll = logoTrack.scrollLeft;
-                const maxScroll = logoTrack.scrollWidth - logoTrack.clientWidth;
-                
-                if (currentScroll >= maxScroll - 10) {
-                    logoTrack.scrollLeft = 0;
-                } else {
-                    logoTrack.scrollLeft += 1;
-                }
-            }
-        }, 20);
-    }
-    
-    // Start auto-scroll on page load
-    startAutoScroll();
-    
-    // Manual navigation
-    prevBtn.addEventListener('click', () => {
-        logoTrack.scrollBy({ left: -200, behavior: 'smooth' });
+    // Create dots
+    cards.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.classList.add('review-dot');
+        if (index === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => {
+            goToSlide(index);
+        });
+        dotsContainer.appendChild(dot);
     });
     
-    nextBtn.addEventListener('click', () => {
-        logoTrack.scrollBy({ left: 200, behavior: 'smooth' });
-    });
+    const dots = document.querySelectorAll('.review-dot');
     
-    // Pause/resume functionality
-    pauseBtn.addEventListener('click', () => {
-        isPaused = !isPaused;
-        pauseBtn.innerHTML = isPaused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
-    });
-    
-    // Pause on hover
-    carousel.addEventListener('mouseenter', () => {
-        isPaused = true;
-        pauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-    });
-    
-    carousel.addEventListener('mouseleave', () => {
-        isPaused = false;
-        pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    });
-});
-
-// Form submission handling
-document.querySelector('form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Get form values
-    const name = document.querySelector('input[type="text"]').value;
-    const email = document.querySelector('input[type="email"]').value;
-    const message = document.querySelector('textarea').value;
-    
-    // Simple validation
-    if (!name || !email || !message) {
-        alert('Please fill in all fields');
-        return;
-    }
-    
-    // In a real application, you would send this data to a server
-    console.log('Form submitted:', { name, email, message });
-    
-    // Show success message
-    alert('Thank you for your message! We will get back to you soon.');
-    
-    // Reset form
-    document.querySelector('form').reset();
-});
-
-// Smooth scrolling for navigation
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
+    // Update carousel position
+    function updateCarousel() {
+        const cardWidth = cards[0].offsetWidth;
+        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
         
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            window.scrollTo({
-                top: target.offsetTop - 80,
-                behavior: 'smooth'
-            });
-        }
+        // Update active dot
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+        });
+    }
+    
+    function goToSlide(index) {
+        currentIndex = index;
+        if (currentIndex >= cardCount) currentIndex = 0;
+        if (currentIndex < 0) currentIndex = cardCount - 1;
+        updateCarousel();
+    }
+    
+    // Navigation
+    nextBtn.addEventListener('click', () => {
+        currentIndex++;
+        if (currentIndex >= cardCount) currentIndex = 0;
+        updateCarousel();
     });
+    
+    prevBtn.addEventListener('click', () => {
+        currentIndex--;
+        if (currentIndex < 0) currentIndex = cardCount - 1;
+        updateCarousel();
+    });
+    
+    // Auto-advance
+    let autoSlide = setInterval(() => {
+        currentIndex++;
+        if (currentIndex >= cardCount) currentIndex = 0;
+        updateCarousel();
+    }, 5000);
+    
+    // Pause auto-advance on hover
+    track.addEventListener('mouseenter', () => {
+        clearInterval(autoSlide);
+    });
+    
+    track.addEventListener('mouseleave', () => {
+        autoSlide = setInterval(() => {
+            currentIndex++;
+            if (currentIndex >= cardCount) currentIndex = 0;
+            updateCarousel();
+        }, 5000);
+    });
+    
+    // Responsive adjustments
+    window.addEventListener('resize', updateCarousel);
 });
